@@ -56,11 +56,10 @@
        <div class="row">
         <div class="well well-sm">
         <form method="post" class="form" action="/add/">
-         <input type="text" name="title" placeholder="Title">
-         <input type="text" name="author" placeholder="Author">
-         <input type="text" name="genre" placeholder="Genre">
-         <input type="text" name="description" placeholder="Description">
-         <input type="text" name="user_name" placeholder="User Name">
+         <input type="text" name="name" placeholder="Name">
+         <input type="text" name="phone" placeholder="Phone Number">
+         <input type="text" name="pickup" placeholder="Pick Up Location">
+         <input type="text" name="destination" placeholder="destination">
          <input type="submit" value="Submit">
         <form>
        </div>
@@ -72,7 +71,7 @@
         A book with that title and author already exists in the database
         </div>
         {% elif alert == "required" %}
-       <div class ="alert alert-danger role="alert">
+       <div class ="alert alert-danger" role="alert">
         All of the above fields are required
         </div> 
        {% endif %}
