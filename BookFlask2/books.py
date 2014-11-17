@@ -32,26 +32,46 @@ def detail(name):
 		rides.update({'name':name}, updated_document)
 		cursor = rides.find_one({'name': request.form['name']})
 			
-	results = {field:value for field, value in cursor.items()}
+	results = {field:value for field, value in cursor.items() if field != 'claimed'}
 	return render_template('detail.html', result=results)
 
 
 @app.route('/claim/<name>/', methods=['GET', 'POST'])
-def claim(name):
-	new_data = {}
+def claim(name):	
+	cursor = rides.find_one({'name':name})
+	cursor_dict = {field:value for field, value in cursor.items()}
+	already_claimed = cursor_dict['claimed']
 	if request.method == 'GET':
-		cursor = rides.find_one({'name':name})
+		claimed_result = {field:value for field, value in cursor.items()}
+		claimed_result['claimed'] = True
+		rides.update({'name':name}, claimed_result)
 
 	elif request.method == 'POST':
-		cursor = rides.find_one({'name':name})
 		new_data = {k : v for k, v in request.form.items()}
 		new_data.update({field:value for field, value in cursor.items()})
 		#Add values of driver fields
 		rides.update({'name':name}, new_data)
 		cursor = rides.find_one({'name':name})
 			
-	results = {field:value for field, value in cursor.items()}
-	return render_template('claim.html', result = results)
+	results = {field:value for field, value in cursor.items() if field != 'claimed'}
+	return render_template('claim.html', result = results, already_claimed = already_claimed)
+
+@app.route('/cancel_claim/<name>/', methods=['POST'])
+def cancel_claim(name):
+	unclaimed_result = {field:value for field, value in rides.find_one({'name':name}).items()}
+	unclaimed_result['claimed'] = False;
+	rides.update({'name':name}, unclaimed_result)
+	return render_template('cancel_claim.html', result=unclaimed_result)
+
+
+@app.route('/unclaimed_rides/', methods=['GET', 'POST'])
+def unclaimed_rides():
+	if request.method == 'GET':
+		results = rides.find({'claimed':False})
+		return_dict = convert_to_dict(results)
+
+		return render_template('unclaimed_rides.html', posting=False, result=return_dict)
+
 
 # serves image in image file for a particular book
 # @app.route('/static/images/<image>/')
@@ -112,6 +132,7 @@ def convert_to_dict(iterable):
 def add():
 	if request.method == 'POST':
 		new_data = {k : v for k, v in request.form.items()}
+		new_data['claimed'] = False
 		#If the user leaves a field blank
 		if new_data['name'] == '' or new_data['phone'] == '' or new_data['pickup'] == '' or new_data['destination'] == '':
 			return render_template('add.html', alert="required")
