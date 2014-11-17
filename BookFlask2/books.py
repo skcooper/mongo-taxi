@@ -35,6 +35,24 @@ def detail(name):
 	results = {field:value for field, value in cursor.items()}
 	return render_template('detail.html', result=results)
 
+
+@app.route('/claim/<name>/', methods=['GET', 'POST'])
+def claim(name):
+	new_data = {}
+	if request.method == 'GET':
+		cursor = rides.find_one({'name':name})
+
+	elif request.method == 'POST':
+		cursor = rides.find_one({'name':name})
+		new_data = {k : v for k, v in request.form.items()}
+		new_data.update({field:value for field, value in cursor.items()})
+		#Add values of driver fields
+		rides.update({'name':name}, new_data)
+		cursor = rides.find_one({'name':name})
+			
+	results = {field:value for field, value in cursor.items()}
+	return render_template('claim.html', result = results)
+
 # serves image in image file for a particular book
 # @app.route('/static/images/<image>/')
 # def image(image):
