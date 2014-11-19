@@ -74,15 +74,15 @@ def unclaimed_rides():
 
 
 # serves image in image file for a particular book
-# @app.route('/static/images/<image>/')
-# def image(image):
-# 	return app.send_static_file('images/'+image)
+@app.route('/static/images/<image>/')
+def image(image):
+	return app.send_static_file('images/'+image)
 
 # Leads to detail page of a randomly chosen book
-# @app.route('/featured/')
-# def featured():
-# 	random = rides.find_one()
-# 	return redirect('/detail/'+random['title']+'/'+random['author']+'/')
+@app.route('/featured/')
+def featured():
+	random = rides.find_one()
+	return redirect('/detail/'+random['name']+'/')
 
 
 # The search page
@@ -92,27 +92,11 @@ def search():
 	if request.method == 'POST':
 		query = request.form['query']
 		
-		user_cursor = rides.find({'name':query})
-		driver_cursor = rides.find({'driver_name':query})
-		pickup_cursor = rides.find({'pickup':query})
-		destination_cursor = rides.find({'destination':query})
-
-		no_results = user_cursor.count() == 0 and driver_cursor.count() == 0 and pickup_cursor.count() == 0 and destination_cursor.count() == 0
-
-		user_dict = convert_to_dict(user_cursor)
-		driver_dict = convert_to_dict(driver_cursor)
-		pickup_dict = convert_to_dict(pickup_cursor)
-		destination_dict = convert_to_dict(destination_cursor)
-
-		# title_cursor = rides.find({'title':query})
-		# author_cursor = rides.find({'author':query})
-
-		# no_results = author_cursor.count() == 0 and title_cursor.count() == 0
-	
-		# title_dict = convert_to_dict(title_cursor)
-		# author_dict = convert_to_dict(author_cursor)     
-
-		return render_template('search.html', posting=True, query=query, no_results=no_results, user_results=user_dict, driver_results=driver_dict, pickup_results=pickup_dict, destination_results=destination_dict)  
+		# can add more fields to check for them too
+		cursor = rides.find({"$or": [{'name':query}, {'destination':query}, {'pickup':query}, {'phone':query}]})
+		no_results = cursor.count() == 0
+		cursor_dict = convert_to_dict(cursor)
+		return render_template('search.html', posting=True, query=query, no_results=no_results, cursor_result = cursor_dict)  
 	else:
 		return render_template('search.html', posting=False)
 

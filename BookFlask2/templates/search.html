@@ -70,16 +70,7 @@
         <h3>No results for <i>'{{query}}'</i></h3>
        {% else %}
         <h3>Results for <i>'{{query}}'</i>:</h3>
-        {% for key,result in user_results.iteritems() %}
-          <a href="/detail/{{result['name']}}/">{{result['name']}}</br></a>
-        {%endfor%}
-        {% for key, result in driver_results.iteritems() %}
-          <a href="/detail/{{result['name']}}/">{{result['name']}}</br></a>
-        {%endfor%}
-        {% for key, result in pickup_results.iteritems() %}
-          <a href="/detail/{{result['name']}}/">{{result['name']}}</br></a>
-        {%endfor%}
-        {% for key, result in destination_results.iteritems() %}
+        {% for key, result in cursor_result.iteritems() %}
           <a href="/detail/{{result['name']}}/">{{result['name']}}</br></a>
         {%endfor%}
        {% endif %}
