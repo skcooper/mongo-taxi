@@ -1,5 +1,6 @@
 from flask import Flask, render_template, redirect, request
 import pymongo
+from bson.objectid import ObjectId
 
 app = Flask(__name__, static_url_path = "")
 connection_string = "mongodb://127.0.0.1"
@@ -13,10 +14,10 @@ def splash():
 	return app.send_static_file('splash.html')
 
 #Individual information page for each book
-@app.route('/detail/<name>/', methods=['GET', 'POST'])
-def detail(name):
+@app.route('/detail/<ride_id>/', methods=['GET', 'POST'])
+def detail(ride_id):
 	if request.method == 'GET':
-		cursor = rides.find_one({'name':name})
+		cursor = rides.find_one({'_id': ObjectId(ride_id)})
 
 	elif request.method == 'POST':
 		#Add new values of all pre-existing attributes
@@ -81,8 +82,9 @@ def image(image):
 # Leads to detail page of a randomly chosen book
 @app.route('/featured/')
 def featured():
-	random = rides.find_one()
-	return redirect('/detail/'+random['name']+'/')
+	random = rides.find()
+	return_dict = convert_to_dict(random)
+	return redirect('/detail/'+str(return_dict.itervalues().next()['_id'])+'/')
 
 
 # The search page

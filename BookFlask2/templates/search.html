@@ -71,7 +71,7 @@
        {% else %}
         <h3>Results for <i>'{{query}}'</i>:</h3>
         {% for key, result in cursor_result.iteritems() %}
-          <a href="/detail/{{result['name']}}/">{{result['name']}}</br></a>
+          <a href="/detail/{{result['_id']}}/">{{result['name']}}</br></a>
         {%endfor%}
        {% endif %}
       {% endif %}
