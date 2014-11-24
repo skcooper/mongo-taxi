@@ -7,6 +7,11 @@ connection_string = "mongodb://127.0.0.1"
 connection = pymongo.MongoClient(connection_string)
 database = connection.taxi
 rides = database.rides
+driver = database.driver
+
+#Add first (and so far, only) driver
+if driver.find({'name':'driver1'}).count() == 0:
+	driver.insert({'name':'driver1', 'car':'car1', 'phone':'phone1', 'rate':'rate1'})
 
 #Homepage
 @app.route('/')
@@ -48,10 +53,20 @@ def claim(name):
 		rides.update({'name':name}, claimed_result)
 
 	elif request.method == 'POST':
-		new_data = {k : v for k, v in request.form.items()}
-		new_data.update({field:value for field, value in cursor.items()})
-		#Add values of driver fields
-		rides.update({'name':name}, new_data)
+		# new_data.update({field:value for field, value in cursor.items()})
+
+		cur_driver = driver.find_one({'name':'driver1'})
+		new_driver_data = {field:value for field,value in cur_driver.items()}
+		#Add driver name to ride
+		cursor_dict.update({'driver_name':new_driver_data['name']})
+		rides.update({'name':name}, cursor_dict)
+		#Add ride _id to driver list
+		if 'rides' not in new_driver_data :
+			new_driver_data['rides'] = {}
+		new_driver_data['rides'].update({str(cursor_dict['_id']):cursor_dict['name']})
+
+		driver.update({'_id':new_driver_data['_id']}, new_driver_data)
+
 		cursor = rides.find_one({'name':name})
 			
 	results = {field:value for field, value in cursor.items() if field != 'claimed'}
@@ -120,16 +135,22 @@ def add():
 		new_data = {k : v for k, v in request.form.items()}
 		new_data['claimed'] = False
 		#If the user leaves a field blank
-		if new_data['name'] == '' or new_data['phone'] == '' or new_data['pickup'] == '' or new_data['destination'] == '':
+		if new_data['name'] == '' or new_data['phone'] == '' or new_data['pickup'] == '' or new_data['destination'] == '' or new_data['time'] == '':
 			return render_template('add.html', alert="required")
 		#If the user tries to add a book that's already in the database
-		elif rides.find({'name':new_data['name'], 'phone':new_data['phone'], 'pickup':new_data['pickup'], 'destination':new_data['destination']}).count() > 0: 
+		elif rides.find({'name':new_data['name'], 'time':new_data['time']}).count() > 0: 
 			return render_template('add.html', alert="exists")
 		else:
-			rides.insert(new_data)
+			rides.insert(new_data);
 			return render_template('add.html', alert = "success")
 	else:
 		return render_template('add.html', alert="")
+
+@app.route('/drivers/', methods=['GET', 'POST'])
+def drivers(): 
+	results = convert_to_dict(driver.find({}))
+
+	return render_template('drivers.html', result = results)
 
 if __name__ == '__main__':
 	app.debug = True
